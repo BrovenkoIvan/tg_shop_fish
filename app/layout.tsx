@@ -23,7 +23,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
+      <head><script src="https://telegram.org/js/telegram-web-app.js"></script></head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
