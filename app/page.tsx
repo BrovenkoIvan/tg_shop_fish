@@ -18,6 +18,8 @@ export default function Home() {
   const [user, setUser] = useState<any>(null);
   const [cart, setCart] = useState<Product[]>([]);
   const [tab, setTab] = useState<"catalog" | "cart" | "profile">("catalog");
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).Telegram) {
@@ -34,61 +36,90 @@ export default function Home() {
 
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
-  return (
-    <div style={{ minHeight: "100vh", paddingBottom: 70 }}>
-      <div style={{ padding: 16 }}>
-        <h1>🎣 Fishing Store</h1>
+  const placeOrder = async () => {
+    if (!user) return alert("Пользователь не найден");
+    if (cart.length === 0) return alert("Корзина пуста");
 
-        {tab === "catalog" && (
-          <>
-            {products.map((product) => (
-              <div
-                key={product.id}
-                style={{
-                  background: "#f5f5f5",
-                  padding: 16,
-                  borderRadius: 12,
-                  marginBottom: 12,
-                }}
+    setLoading(true);
+    setSuccess(false);
+
+    try {
+      const tg = (window as any).Telegram.WebApp;
+      const res = await fetch("https://tg-shop-fish-api.onrender.com/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cart, user, initData: tg.initData }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setSuccess(true);
+        setCart([]);
+      } else {
+        alert(data.error || "Ошибка при отправке заказа");
+      }
+    } catch (e) {
+      alert("Сервер недоступен");
+      console.error(e);
+    }
+
+    setLoading(false);
+  };
+
+  return (
+    <div className="min-h-screen pb-24 bg-gray-50">
+      <div className="p-4">
+        <h1 className="text-2xl font-bold mb-4">🎣 Fishing Store</h1>
+
+        {tab === "catalog" &&
+          products.map((product) => (
+            <div
+              key={product.id}
+              className="bg-white p-4 rounded-xl mb-3 shadow"
+            >
+              <h3 className="text-lg font-semibold">{product.name}</h3>
+              <p className="text-gray-600">{product.price} грн</p>
+              <button
+                onClick={() => addToCart(product)}
+                className="mt-2 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
               >
-                <h3>{product.name}</h3>
-                <p>{product.price} грн</p>
-                <button
-                  onClick={() => addToCart(product)}
-                  style={{
-                    padding: 10,
-                    width: "100%",
-                    background: "#0088cc",
-                    color: "white",
-                    borderRadius: 8,
-                    border: "none",
-                  }}
-                >
-                  Добавить в корзину
-                </button>
-              </div>
-            ))}
-          </>
-        )}
+                Добавить в корзину
+              </button>
+            </div>
+          ))}
 
         {tab === "cart" && (
           <>
-            <h2>🛒 Корзина</h2>
+            <h2 className="text-xl font-semibold mb-2">🛒 Корзина ({cart.length})</h2>
             {cart.length === 0 && <p>Корзина пуста</p>}
-
-            {cart.map((item, index) => (
-              <div key={index} style={{ marginBottom: 8 }}>
+            {cart.map((item, idx) => (
+              <div key={idx} className="py-1">
                 {item.name} — {item.price} грн
               </div>
             ))}
+            <h3 className="font-bold mt-2">Итого: {total} грн</h3>
 
-            <h3>Итого: {total} грн</h3>
+            <button
+              onClick={placeOrder}
+              disabled={loading || cart.length === 0}
+              className={`mt-4 w-full py-3 rounded-lg text-white transition ${
+                loading || cart.length === 0
+                  ? "bg-gray-400 cursor-not-allowed"
+                  : "bg-green-600 hover:bg-green-700"
+              }`}
+            >
+              {loading ? "Отправка..." : "Оформить заказ"}
+            </button>
+
+            {success && (
+              <p className="text-green-600 mt-2">✅ Заказ успешно отправлен!</p>
+            )}
           </>
         )}
 
         {tab === "profile" && (
           <>
-            <h2>👤 Профиль</h2>
+            <h2 className="text-xl font-semibold mb-2">👤 Профиль</h2>
             {user ? (
               <>
                 <p>Имя: {user.first_name}</p>
@@ -101,24 +132,26 @@ export default function Home() {
         )}
       </div>
 
-      {/* Нижняя навигация */}
-      <div
-        style={{
-          position: "fixed",
-          bottom: 0,
-          width: "100%",
-          display: "flex",
-          justifyContent: "space-around",
-          background: "white",
-          borderTop: "1px solid #ddd",
-          padding: 10,
-        }}
-      >
-        <button onClick={() => setTab("catalog")}>📦 Каталог</button>
-        <button onClick={() => setTab("cart")}>
+      {/* Нижнее меню */}
+      <div className="fixed bottom-0 w-full flex justify-around bg-white border-t border-gray-200 py-2">
+        <button
+          onClick={() => setTab("catalog")}
+          className="flex-1 text-center py-2"
+        >
+          📦 Каталог
+        </button>
+        <button
+          onClick={() => setTab("cart")}
+          className="flex-1 text-center py-2"
+        >
           🛒 Корзина ({cart.length})
         </button>
-        <button onClick={() => setTab("profile")}>👤 Профиль</button>
+        <button
+          onClick={() => setTab("profile")}
+          className="flex-1 text-center py-2"
+        >
+          👤 Профиль
+        </button>
       </div>
     </div>
   );
