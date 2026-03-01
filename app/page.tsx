@@ -82,7 +82,7 @@ export default function Home() {
               className="bg-white p-4 rounded-xl mb-3 shadow"
             >
               <h3 className="text-lg font-semibold">{product.name}</h3>
-              <p className="text-red-600">{product.price} грн</p>
+              <p className="text-red">{product.price} грн</p>
               <button
                 onClick={() => addToCart(product)}
                 className="mt-2 w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
