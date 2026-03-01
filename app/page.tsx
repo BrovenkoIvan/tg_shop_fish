@@ -77,7 +77,7 @@ export default function Home() {
   return (
     <div className="min-h-screen pb-24 bg-gray-50">
       <div className="p-4">
-        <h1 className="text-2xl font-bold mb-4">🎣 Fishing Store</h1>
+        <h1 className="text-2xl font-bold mb-4">🎣 Fishing Store v1</h1>
 
         {tab === "catalog" &&
           products.map((product) => (
