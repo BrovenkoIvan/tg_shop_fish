@@ -20,6 +20,7 @@ export default function Home() {
   const [tab, setTab] = useState<"catalog" | "cart" | "profile">("catalog");
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [initData, setInitData] = useState<string>(""); // <--- сюда положим строку для сервера
 
   useEffect(() => {
     if (typeof window !== "undefined" && (window as any).Telegram) {
@@ -27,6 +28,8 @@ export default function Home() {
       tg.ready();
       tg.expand();
       setUser(tg.initDataUnsafe?.user);
+      setInitData(tg.initData); // <--- теперь у нас точно строка initData
+      console.log("InitData:", tg.initData);
     }
   }, []);
 
@@ -44,11 +47,12 @@ export default function Home() {
     setSuccess(false);
 
     try {
-      const tg = (window as any).Telegram.WebApp;
+      if (!initData) return alert("InitData не доступен. Откройте Mini App через Telegram.");
+
       const res = await fetch("https://tgshop-api.onrender.com/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, user, initData: tg.initData }),
+        body: JSON.stringify({ cart, user, initData }), // <--- отправляем правильную строку
       });
 
       const data = await res.json();
