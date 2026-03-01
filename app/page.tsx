@@ -40,35 +40,39 @@ export default function Home() {
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   const placeOrder = async () => {
-    if (!user) return alert("Пользователь не найден");
-    if (cart.length === 0) return alert("Корзина пуста");
+  if (cart.length === 0) return alert("Корзина пуста");
 
-    setLoading(true);
-    setSuccess(false);
+  setLoading(true);
+  setSuccess(false);
 
-    try {
-      if (!initData) return alert("InitData не доступен. Откройте Mini App через Telegram.");
-
-      const res = await fetch("https://tgshop-api.onrender.com/order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cart, user, initData }), // <--- отправляем правильную строку
-      });
-
-      const data = await res.json();
-      if (data.success) {
-        setSuccess(true);
-        setCart([]);
-      } else {
-        alert(data.error || "Ошибка при отправке заказа");
-      }
-    } catch (e) {
-      alert("Сервер недоступен");
-      console.error(e);
+  try {
+    if (!initData) {
+      alert("InitData не доступен. Откройте Mini App через Telegram.");
+      setLoading(false);
+      return;
     }
 
-    setLoading(false);
-  };
+    const res = await fetch("https://tgshop-api.onrender.com/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cart, initData }), // ✅ user убрали
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      setSuccess(true);
+      setCart([]);
+    } else {
+      alert(data.error || "Ошибка при отправке заказа");
+    }
+  } catch (e) {
+    alert("Сервер недоступен");
+    console.error(e);
+  }
+
+  setLoading(false);
+};
 
   return (
     <div className="min-h-screen pb-24 bg-gray-50">
