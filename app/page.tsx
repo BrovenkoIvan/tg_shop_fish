@@ -45,7 +45,7 @@ export default function Home() {
 
     try {
       const tg = (window as any).Telegram.WebApp;
-      const res = await fetch("https://tg-shop-fish-api.onrender.com/order", {
+      const res = await fetch("https://tgshop-api.onrender.com/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cart, user, initData: tg.initData }),
